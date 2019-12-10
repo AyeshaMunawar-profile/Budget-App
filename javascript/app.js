@@ -10,21 +10,30 @@ let budgetController = (function () {
 })();
 //UI CONTROLLER
 let UIController = (function () {
-
+    var DOMstring = {
+        inputType: '.add__type',
+        addDescription: '.add__description',
+        addValue: '.add__value',
+        addButton: ".add__btn"
+    };
     return {
         getInput: function () {
             return {
-                type: document.querySelector('.add__type').value, // will be either inc or exp
-                description: document.querySelector('.add__description').value,
-                value: document.querySelector('.add__value').value
+                type: document.querySelector(DOMstring.inputType).value, // will be either inc or exp
+                description: document.querySelector(DOMstring.addDescription).value,
+                value: document.querySelector(DOMstring.addValue).value
             };
+        },
+        getDOMStrings: function(){
+            return DOMstring;
         }
     };
 })();
 //GLOBAL APP CONTROLLER
 // Connect Ui controller and budget controller
 let controller = (function (budgetCrl, UICrl) {
-    var crlAddItem = function () {
+    let DOMstrings= UICrl.getDOMStrings();
+    let crlAddItem = function () {
         // 1. get the field input data
         let input = UICrl.getInput();
         console.log(input);
@@ -36,7 +45,9 @@ let controller = (function (budgetCrl, UICrl) {
 
         // 5. display the overall budget on UI
     };
-    document.querySelector(".add__btn").addEventListener('click', crlAddItem);
+
+
+    document.querySelector(DOMstrings.addButton).addEventListener('click', crlAddItem);
     document.addEventListener('keypress', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13 || event.which === 13) {
             crlAddItem();
