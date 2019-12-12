@@ -124,7 +124,6 @@ let controller = (function (budgetCrl, UICrl) {
         UICrl.addListItem(newItem, input.type);
         // 4. calculate the overall budget
 
-
         // 5. display the overall budget on UI
     };
 
