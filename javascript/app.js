@@ -9,14 +9,14 @@ let budgetController = (function () {
         //function constructor for income object
         let Income = function (id, description, value) {
             this.id = id;
-            this.description = description ? description : 'income-'+id;
+            this.description = description ? description : 'income-' + id;
             this.value = value ? value : 0;
         };
         //function constructor of expense object
         let Expense = function (id, description, value) {
             this.id = id;
-            this.description = description ? description : 'income-'+id;
-            this.value =  value ? value : 0;
+            this.description = description ? description : 'income-' + id;
+            this.value = value ? value : 0;
         };
         let budgetData = {
             allItems: {
@@ -72,11 +72,11 @@ let UIController = (function () {
     };
     return {
         getInput: function () {
-                return {
-                    type: document.querySelector(DOMstring.inputType).value, // will be either inc or exp
-                    description: document.querySelector(DOMstring.addDescription).value,
-                    value: document.querySelector(DOMstring.addValue).value
-                };
+            return {
+                type: document.querySelector(DOMstring.inputType).value, // will be either inc or exp
+                description: document.querySelector(DOMstring.addDescription).value,
+                value: parseFloat(document.querySelector(DOMstring.addValue).value) //convert string to number for further calculations
+            };
         },
         addListItem: function (obj, type) {
             //create HTML string with placeholder text
@@ -101,7 +101,7 @@ let UIController = (function () {
             fields = document.querySelectorAll(DOMstring.addDescription + ',' + DOMstring.addValue);
             fieldsArray = Array.prototype.slice.call(fields);
             fieldsArray.forEach(function (current, index, array) {
-                current.value="";
+                current.value = "";
             });
             fieldsArray[0].focus();
         }
@@ -123,19 +123,28 @@ let controller = (function (budgetCrl, UICrl) {
             }
         });
     };
+
+    let updateBudget = function () {
+        // 1. calculate the overall budget
+        // 2. return budget
+        // 3. display the overall budget on UI
+    };
+
     let crlAddItem = function () {
         let input, newItem;
         // 1. get the field input data
         input = UICrl.getInput();
+        // 1.1 input validation
+        if(input.description !== "" && !isNaN(input.value) && input.value>0) {
             // 2. add the item to the appropriate data structure as income or expense through budget controller
             newItem = budgetCrl.addItems(input.type, input.description, input.value);
             // 3. add the item to the UI list of expenses or income items based on the type of item
             UICrl.addListItem(newItem, input.type);
-            //4. clear the fields
+            // 4. clear the fields
             UICrl.clearFields();
-            // 5. calculate the overall budget
-
-            // 6. display the overall budget on UI
+            // 5.calculate and update budget
+            updateBudget();
+        }
     };
 
     return {
