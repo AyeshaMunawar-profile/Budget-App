@@ -81,10 +81,10 @@ let budgetController = (function () {
                 //2. calculate total budget: income -expense
                 budgetData.budget = budgetData.totalItems.inc - budgetData.totalItems.exp;
                 //3. calculate the total percentage of income that we spent (only calculate it if income is > 0)
-                if(budgetData.totalItems.inc > 0) {
+                if (budgetData.totalItems.inc > 0) {
                     budgetData.incomeSpentPercentage = Math.round((budgetData.totalItems.exp / budgetData.totalItems.inc) * 100);
-                }else{
-                    budgetData.incomeSpentPercentage= -1 // assign anomaly case value i.e -1
+                } else {
+                    budgetData.incomeSpentPercentage = -1 // assign anomaly case value i.e -1
                 }
             }
             ,
@@ -118,10 +118,14 @@ let UIController = (function () {
             };
         },
         updateBudgetInfo: function (budgetObj) {
-            document.querySelector(DOMstring.budgetValue).innerHTML= budgetObj.budget;
-            document.querySelector(DOMstring.budgetExpensesValue).innerHTML = budgetObj.totalExpenses;
-            document.querySelector(DOMstring.budgetIncomeValue).innerHTML= budgetObj.totalIncome;
-            document.querySelector(DOMstring.budgetIncomePercentage).innerHTML = budgetObj.incomeSpentPercentage + " %";
+            document.querySelector(DOMstring.budgetValue).textContent = budgetObj.budget;
+            document.querySelector(DOMstring.budgetExpensesValue).textContent = budgetObj.totalExpenses;
+            document.querySelector(DOMstring.budgetIncomeValue).textContent = budgetObj.totalIncome;
+            if (budgetObj.incomeSpentPercentage > 0) {
+                document.querySelector(DOMstring.budgetIncomePercentage).textContent = budgetObj.incomeSpentPercentage + " %";
+            } else {
+                document.querySelector(DOMstring.budgetIncomePercentage).textContent = "---";
+            }
         },
         addListItem: function (obj, type) {
             //create HTML string with placeholder text
@@ -138,8 +142,7 @@ let UIController = (function () {
             newHtml = newHtml.replace('%desc%', obj.description);
             newHtml = newHtml.replace('%value%', obj.value);
             //insert the html into DOM use insert adjacent html
-            document.querySelector(DOMlistContainer).insertAdjacentHTML("beforeend", newHtml)
-
+            document.querySelector(DOMlistContainer).insertAdjacentHTML("beforeend", newHtml);
         },
         clearFields: function () {
             let fields, fieldsArray;
@@ -159,9 +162,7 @@ let UIController = (function () {
 //GLOBAL APP CONTROLLER
 // Connect Ui controller and budget controller
 let controller = (function (budgetCrl, UICrl) {
-    let resetBudgetInfo= function(){
-        UICrl.updateBudgetInfo({budget:0, totalIncome:0,totalExpenses:0,incomeSpentPercentage:-1});
-    };
+
     let setupEventListeners = function () {
         let DOMstrings = UICrl.getDOMStrings();
         document.querySelector(DOMstrings.addButton).addEventListener('click', crlAddItem);
@@ -202,7 +203,7 @@ let controller = (function (budgetCrl, UICrl) {
     return {
         init: function () {
             console.log("The Application has started");
-            resetBudgetInfo();
+            UICrl.updateBudgetInfo({budget: 0, totalIncome: 0, totalExpenses: 0, incomeSpentPercentage: -1});
             setupEventListeners();
         }
     }
