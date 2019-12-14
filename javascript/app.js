@@ -18,19 +18,31 @@ let budgetController = (function () {
             this.description = description ? description : 'income-' + id;
             this.value = value ? value : 0;
         };
-        let budgetData = {
+
+        let calculateTotal = function (type) { // type can be 'inc' or 'exp'
+            let total = 0;
+            budgetData.allItems[type].forEach(function (current) {
+                total += current.value;
+            });
+            //store it in the budget data datastructure
+            budgetData.totalItems[type] = total;
+            return total;
+        };
+
+        let budgetData = { // datastructure to store budget information
             allItems: {
                 exp: [],
                 inc: []
             },
             totalItems: {
-                totalIncome: 0,
-                totalExpenses: 0
+                inc: 0,
+                exp: 0
             },
-            expensePercentage: 0,
-            overallBudget: 0,
+            incomeSpentPercentage: -1,
+            budget: 0,
             itemsCount: 0
         };
+
         return {
             addItems: function (type, des, val) {
                 let newItem, ID;
@@ -51,6 +63,29 @@ let budgetController = (function () {
                 // add new item to the respective data structure based on type i.e exp or inc
                 budgetData.allItems[type].push(newItem);
                 return newItem;
+            },
+            getbudget: function () {
+                return {
+                    budget: budgetData.budget,
+                    totalIncome: budgetData.totalItems.inc,
+                    totalExpenses: budgetData.totalItems.exp,
+                    incomeSpentPercentage: budgetData.incomeSpentPercentage
+                };
+            }
+            ,
+            calculateBudget: function () {
+                let totalIncome, totalExpense, totalBudget, incomeSpentPercentage;
+                //1. calculate total income and expense
+                calculateTotal('inc');
+                calculateTotal('exp');
+                //2. calculate total budget: income -expense
+                budgetData.budget = budgetData.totalItems.inc - budgetData.totalItems.exp;
+                //3. calculate the total percentage of income that we spent (only calculate it if income is > 0)
+                if(budgetData.totalItems.inc > 0) {
+                    budgetData.incomeSpentPercentage = Math.round((budgetData.totalItems.exp / budgetData.totalItems.inc) * 100);
+                }else{
+                    budgetData.incomeSpentPercentage= -1 // assign anomaly case value i.e -1
+                }
             }
             ,
             testing: function () {
@@ -68,7 +103,11 @@ let UIController = (function () {
         addValue: '.add__value',
         addButton: ".add__btn",
         incomeList: ".income__list",
-        expenseList: ".expenses__list"
+        expenseList: ".expenses__list",
+        budgetValue: ".budget__value",
+        budgetIncomeValue: ".budget__income--value",
+        budgetExpensesValue: ".budget__expenses--value",
+        budgetIncomePercentage: ".budget__expenses--percentage"
     };
     return {
         getInput: function () {
@@ -77,6 +116,12 @@ let UIController = (function () {
                 description: document.querySelector(DOMstring.addDescription).value,
                 value: parseFloat(document.querySelector(DOMstring.addValue).value) //convert string to number for further calculations
             };
+        },
+        updateBudgetInfo: function (budgetObj) {
+            document.querySelector(DOMstring.budgetValue).innerHTML= budgetObj.budget;
+            document.querySelector(DOMstring.budgetExpensesValue).innerHTML = budgetObj.totalExpenses;
+            document.querySelector(DOMstring.budgetIncomeValue).innerHTML= budgetObj.totalIncome;
+            document.querySelector(DOMstring.budgetIncomePercentage).innerHTML = budgetObj.incomeSpentPercentage + " %";
         },
         addListItem: function (obj, type) {
             //create HTML string with placeholder text
@@ -114,6 +159,9 @@ let UIController = (function () {
 //GLOBAL APP CONTROLLER
 // Connect Ui controller and budget controller
 let controller = (function (budgetCrl, UICrl) {
+    let resetBudgetInfo= function(){
+        UICrl.updateBudgetInfo({budget:0, totalIncome:0,totalExpenses:0,incomeSpentPercentage:-1});
+    };
     let setupEventListeners = function () {
         let DOMstrings = UICrl.getDOMStrings();
         document.querySelector(DOMstrings.addButton).addEventListener('click', crlAddItem);
@@ -125,9 +173,13 @@ let controller = (function (budgetCrl, UICrl) {
     };
 
     let updateBudget = function () {
+        let budget;
         // 1. calculate the overall budget
+        budgetCrl.calculateBudget();
         // 2. return budget
+        budget = budgetCrl.getbudget();
         // 3. display the overall budget on UI
+        UICrl.updateBudgetInfo(budget);
     };
 
     let crlAddItem = function () {
@@ -135,14 +187,14 @@ let controller = (function (budgetCrl, UICrl) {
         // 1. get the field input data
         input = UICrl.getInput();
         // 1.1 input validation
-        if(input.description !== "" && !isNaN(input.value) && input.value>0) {
+        if (input.description !== "" && !isNaN(input.value) && input.value > 0) {
             // 2. add the item to the appropriate data structure as income or expense through budget controller
             newItem = budgetCrl.addItems(input.type, input.description, input.value);
             // 3. add the item to the UI list of expenses or income items based on the type of item
             UICrl.addListItem(newItem, input.type);
             // 4. clear the fields
             UICrl.clearFields();
-            // 5.calculate and update budget
+            // 5. calculate and update budget
             updateBudget();
         }
     };
@@ -150,6 +202,7 @@ let controller = (function (budgetCrl, UICrl) {
     return {
         init: function () {
             console.log("The Application has started");
+            resetBudgetInfo();
             setupEventListeners();
         }
     }
