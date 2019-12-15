@@ -72,10 +72,11 @@ let budgetController = (function () {
                 index = idArray.indexOf(id); // find index of the element with this id
                 if (index !== -1) {
                     budgetData.allItems[type].splice(index, 1); // delete at index 1 array element
+                    budgetData.itemsCount--;
                     return index;
                 }
-            }
-            ,
+            },
+
             getbudget: function () {
                 return {
                     budget: budgetData.budget,
@@ -98,8 +99,7 @@ let budgetController = (function () {
                 } else {
                     budgetData.incomeSpentPercentage = -1 // assign anomaly case value i.e -1
                 }
-            }
-            ,
+            },
             testing: function () {
                 console.log(budgetData);
             }
@@ -167,7 +167,9 @@ let UIController = (function () {
             fieldsArray[0].focus();
         },
         deleteItem: function (type, index) {
-
+            let item;
+            item = document.getElementById(type + '-' + index);
+            item.remove();
         }
         ,
         getDOMStrings: function () {
@@ -201,7 +203,7 @@ let controller = (function (budgetCrl, UICrl) {
             //1. delete thew item from the datastructure
             index = budgetCrl.deleteItem(type, id);
             //2. delete the item from the UI
-            if (index) {
+            if (index >= 0) {
                 UICrl.deleteItem(type, index);
                 //3. Update the budget
                 crlUpdateBudget();
