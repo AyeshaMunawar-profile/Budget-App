@@ -71,6 +71,9 @@ let budgetController = (function () {
                     totalExpenses: budgetData.totalItems.exp,
                     incomeSpentPercentage: budgetData.incomeSpentPercentage
                 };
+            },
+            deleteItem: function (type, id) {
+
             }
             ,
             calculateBudget: function () {
@@ -107,7 +110,8 @@ let UIController = (function () {
         budgetValue: ".budget__value",
         budgetIncomeValue: ".budget__income--value",
         budgetExpensesValue: ".budget__expenses--value",
-        budgetIncomePercentage: ".budget__expenses--percentage"
+        budgetIncomePercentage: ".budget__expenses--percentage",
+        container: ".container"
     };
     return {
         getInput: function () {
@@ -131,10 +135,10 @@ let UIController = (function () {
             //create HTML string with placeholder text
             let html, newHtml, DOMlistContainer;
             if (type === 'inc') {
-                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%desc%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%desc%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
                 DOMlistContainer = DOMstring.incomeList;
             } else if (type === 'exp') {
-                html = '<div class="item clearfix" id="expense-%id%"> <div class="item__description">%desc%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">%percentage%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="exp-%id%"> <div class="item__description">%desc%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">%percentage%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
                 DOMlistContainer = DOMstring.expenseList;
             }
             //replace placeholder text with actual data
@@ -152,6 +156,9 @@ let UIController = (function () {
                 current.value = "";
             });
             fieldsArray[0].focus();
+        },
+        deleteItem: function (type, id) {
+
         }
         ,
         getDOMStrings: function () {
@@ -171,9 +178,27 @@ let controller = (function (budgetCrl, UICrl) {
                 crlAddItem();
             }
         });
+        document.querySelector(DOMstrings.container).addEventListener('click', crlDeleteItem);
     };
 
-    let updateBudget = function () {
+    let crlDeleteItem = function (event) {
+        let itemID, splitID, type , id;
+        itemID = event.target.parentNode.parentNode.parentNode.parentNode.id; //DOM traversing from delete icon to the div of the whole individual item
+        if (itemID) {
+            //split the id e.g. inc-6 to inc and 6 to call deletion functions for data and UI
+            splitID = itemID.split('-');
+            type=splitID[0];
+            id= parseInt(splitID[1]);
+            //1. delete thew item from the datastructure
+            budgetCrl.deleteItem(type,id);
+            //2. delete the item from the UI
+            UICrl.deleteItem(type,id);
+            //3. Update the budget
+            crlUpdateBudget();
+        }
+    };
+
+    let crlUpdateBudget = function () {
         let budget;
         // 1. calculate the overall budget
         budgetCrl.calculateBudget();
@@ -196,7 +221,7 @@ let controller = (function (budgetCrl, UICrl) {
             // 4. clear the fields
             UICrl.clearFields();
             // 5. calculate and update budget
-            updateBudget();
+            crlUpdateBudget();
         }
     };
 
