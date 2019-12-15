@@ -64,6 +64,18 @@ let budgetController = (function () {
                 budgetData.allItems[type].push(newItem);
                 return newItem;
             },
+            deleteItem: function (type, id) {
+                let idArray, index;
+                idArray = budgetData.allItems[type].map(function (current, index, array) {
+                    return current.id;
+                });
+                index = idArray.indexOf(id); // find index of the element with this id
+                if (index !== -1) {
+                    budgetData.allItems[type].splice(index, 1); // delete at index 1 array element
+                    return index;
+                }
+            }
+            ,
             getbudget: function () {
                 return {
                     budget: budgetData.budget,
@@ -72,10 +84,7 @@ let budgetController = (function () {
                     incomeSpentPercentage: budgetData.incomeSpentPercentage
                 };
             },
-            deleteItem: function (type, id) {
 
-            }
-            ,
             calculateBudget: function () {
                 let totalIncome, totalExpense, totalBudget, incomeSpentPercentage;
                 //1. calculate total income and expense
@@ -157,7 +166,7 @@ let UIController = (function () {
             });
             fieldsArray[0].focus();
         },
-        deleteItem: function (type, id) {
+        deleteItem: function (type, index) {
 
         }
         ,
@@ -182,19 +191,21 @@ let controller = (function (budgetCrl, UICrl) {
     };
 
     let crlDeleteItem = function (event) {
-        let itemID, splitID, type , id;
+        let itemID, splitID, type, id, index;
         itemID = event.target.parentNode.parentNode.parentNode.parentNode.id; //DOM traversing from delete icon to the div of the whole individual item
         if (itemID) {
             //split the id e.g. inc-6 to inc and 6 to call deletion functions for data and UI
             splitID = itemID.split('-');
-            type=splitID[0];
-            id= parseInt(splitID[1]);
+            type = splitID[0];
+            id = parseInt(splitID[1]);
             //1. delete thew item from the datastructure
-            budgetCrl.deleteItem(type,id);
+            index = budgetCrl.deleteItem(type, id);
             //2. delete the item from the UI
-            UICrl.deleteItem(type,id);
-            //3. Update the budget
-            crlUpdateBudget();
+            if (index) {
+                UICrl.deleteItem(type, index);
+                //3. Update the budget
+                crlUpdateBudget();
+            }
         }
     };
 
