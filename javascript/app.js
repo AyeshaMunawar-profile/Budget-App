@@ -30,7 +30,7 @@ let budgetController = (function () {
             }
         };
 
-        Expense.prototype.getPercentage = function(){
+        Expense.prototype.getPercentage = function () {
             return this.percentage;
         };
 
@@ -147,7 +147,13 @@ let UIController = (function () {
         budgetIncomeValue: ".budget__income--value",
         budgetExpensesValue: ".budget__expenses--value",
         budgetIncomePercentage: ".budget__expenses--percentage",
-        container: ".container"
+        container: ".container",
+        itemExpensePercentage: ".item__percentage"
+    };
+    let nodeListForEach = function (list, callbackFunction) {
+        for (var i = 0; i < list.length; i++) {
+            callbackFunction(list[i], i);
+        }
     };
     return {
         getInput: function () {
@@ -197,6 +203,18 @@ let UIController = (function () {
             let item;
             item = document.getElementById(selectorID);
             item.parentNode.removeChild(item);
+        }
+        ,
+        displayPercentages: function (percentages) {
+            let percentageElementsList;
+            percentageElementsList = document.querySelectorAll(DOMstring.itemExpensePercentage);
+                     nodeListForEach(percentageElementsList, function (current, index) {
+                if(percentages[index] !== -1) {
+                    current.textContent = percentages[index] + " %";
+                }else{
+                    current.textContent = "---";
+                }
+            });
         }
         ,
         getDOMStrings: function () {
@@ -254,8 +272,8 @@ let controller = (function (budgetCrl, UICrl) {
         budgetCrl.calculateIncomePercentages();
         //2. read the percentages from the budget Controller
         incomePercentagesArray = budgetCrl.getIncomeSpentPercentages();
-        console.log(incomePercentagesArray);
         //3. update the UI for income spent percentage for each expense entry
+        UICrl.displayPercentages(incomePercentagesArray);
     };
 
     let crlAddItem = function () {
