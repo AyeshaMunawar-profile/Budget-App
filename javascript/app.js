@@ -13,10 +13,25 @@ let budgetController = (function () {
             this.value = value ? value : 0;
         };
         //function constructor of expense object
-        let Expense = function (id, description, value) {
+        let Expense = function (id, description, value, percentage) {
             this.id = id;
             this.description = description ? description : 'income-' + id;
             this.value = value ? value : 0;
+            this.percentage = percentage ? percentage : -1;
+        };
+
+        Expense.prototype.calculatePercentage = function (totalIncome) {
+            let percentage;
+            if (totalIncome > 0) {
+                percentage = Math.round((this.value / totalIncome) * 100);
+                this.percentage = percentage;
+            } else {
+                this.percentage = -1;
+            }
+        };
+
+        Expense.prototype.getPercentage = function(){
+            return this.percentage;
         };
 
         let calculateTotal = function (type) { // type can be 'inc' or 'exp'
@@ -84,7 +99,13 @@ let budgetController = (function () {
                     incomeSpentPercentage: budgetData.incomeSpentPercentage
                 };
             },
-
+            getIncomeSpentPercentages: function () {
+                let percentagesArray;
+                percentagesArray = budgetData.allItems.exp.map(function (current) {
+                    return current.getPercentage();
+                });
+                return percentagesArray;
+            },
             calculateBudget: function () {
                 let totalIncome, totalExpense, totalBudget, incomeSpentPercentage;
                 //1. calculate total income and expense
@@ -98,6 +119,13 @@ let budgetController = (function () {
                 } else {
                     budgetData.incomeSpentPercentage = -1 // assign anomaly case value i.e -1
                 }
+            },
+            calculateIncomePercentages: function () {
+                let totalIncome;
+                totalIncome = budgetData.totalItems.inc;
+                budgetData.allItems.exp.forEach(function (current) {
+                    current.calculatePercentage(totalIncome);
+                });
             },
             testing: function () {
                 console.log(budgetData);
@@ -205,6 +233,8 @@ let controller = (function (budgetCrl, UICrl) {
             UICrl.deleteItem(itemID);
             //3. Update the budget
             crlUpdateBudget();
+            //4. Calculate and update the income spent percentages of each expense entry
+            updateIncomeSpentPercentages();
         }
     };
 
@@ -216,6 +246,16 @@ let controller = (function (budgetCrl, UICrl) {
         budget = budgetCrl.getbudget();
         // 3. display the overall budget on UI
         UICrl.updateBudgetInfo(budget);
+    };
+
+    let updateIncomeSpentPercentages = function () {
+        let incomePercentagesArray;
+        //1. calculate the income spent percentage for each of the expense
+        budgetCrl.calculateIncomePercentages();
+        //2. read the percentages from the budget Controller
+        incomePercentagesArray = budgetCrl.getIncomeSpentPercentages();
+        console.log(incomePercentagesArray);
+        //3. update the UI for income spent percentage for each expense entry
     };
 
     let crlAddItem = function () {
@@ -232,6 +272,8 @@ let controller = (function (budgetCrl, UICrl) {
             UICrl.clearFields();
             // 5. calculate and update budget
             crlUpdateBudget();
+            // 6. calculate and update the income spent percentages of each expense entry
+            updateIncomeSpentPercentages();
         }
     };
 
