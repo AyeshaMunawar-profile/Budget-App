@@ -5,6 +5,9 @@
 // interfaces have access thus creating data encapsulation for the inner functionality and private data
 // variables of each controller
 //BUDGET CONTROLLER
+const INC = "inc";
+const EXP = "exp";
+
 let budgetController = (function () {
         //function constructor for income object
         let Income = function (id, description, value) {
@@ -69,10 +72,10 @@ let budgetController = (function () {
                 }
                 budgetData.itemsCount++;
                 // create new item based on type i.e inc or exp
-                if (type === 'exp') {
+                if (type === EXP) {
                     newItem = new Expense(ID, des, val);
 
-                } else if (type === 'inc') {
+                } else if (type === INC) {
                     newItem = new Income(ID, des, val);
                 }
                 // add new item to the respective data structure based on type i.e exp or inc
@@ -107,10 +110,9 @@ let budgetController = (function () {
                 return percentagesArray;
             },
             calculateBudget: function () {
-                let totalIncome, totalExpense, totalBudget, incomeSpentPercentage;
                 //1. calculate total income and expense
-                calculateTotal('inc');
-                calculateTotal('exp');
+                calculateTotal(INC);
+                calculateTotal(EXP);
                 //2. calculate total budget: income -expense
                 budgetData.budget = budgetData.totalItems.inc - budgetData.totalItems.exp;
                 //3. calculate the total percentage of income that we spent (only calculate it if income is > 0)
@@ -134,6 +136,7 @@ let budgetController = (function () {
 
     }
 )();
+
 //UI CONTROLLER
 let UIController = (function () {
     var DOMstring = {
@@ -155,6 +158,26 @@ let UIController = (function () {
             callbackFunction(list[i], i);
         }
     };
+    let formatNumber = function (number, type) {
+        let numberSplited, intPart, decPart;
+        number = Math.abs(number);
+        // 1) float numbers with precision of 2 decimal places
+        number = number.toFixed(2);
+        // 2) add commas separating the thousands
+        numberSplited = number.split('.'); // separate the integer and decimal part
+        intPart = numberSplited[0];
+        decPart = numberSplited[1];
+        number = parseInt(intPart);
+        intPart = number.toLocaleString();
+        number = intPart + "." + decPart;
+        // 3) if expense "-" sign and if income "+" sign
+        if (type === INC) {
+            number = "+ " + number;
+        } else if (type === EXP) {
+            number = "- " + number;
+        }
+        return number;
+    }
     return {
         getInput: function () {
             return {
@@ -176,17 +199,17 @@ let UIController = (function () {
         addListItem: function (obj, type) {
             //create HTML string with placeholder text
             let html, newHtml, DOMlistContainer;
-            if (type === 'inc') {
+            if (type === INC) {
                 html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%desc%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
                 DOMlistContainer = DOMstring.incomeList;
-            } else if (type === 'exp') {
+            } else if (type === EXP) {
                 html = '<div class="item clearfix" id="exp-%id%"> <div class="item__description">%desc%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">%percentage%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
                 DOMlistContainer = DOMstring.expenseList;
             }
             //replace placeholder text with actual data
             newHtml = html.replace('%id%', obj.id);
             newHtml = newHtml.replace('%desc%', obj.description);
-            newHtml = newHtml.replace('%value%', obj.value);
+            newHtml = newHtml.replace('%value%', formatNumber(obj.value, type));
             //insert the html into DOM use insert adjacent html
             document.querySelector(DOMlistContainer).insertAdjacentHTML("beforeend", newHtml);
         },
