@@ -208,10 +208,10 @@ let UIController = (function () {
         displayPercentages: function (percentages) {
             let percentageElementsList;
             percentageElementsList = document.querySelectorAll(DOMstring.itemExpensePercentage);
-                     nodeListForEach(percentageElementsList, function (current, index) {
-                if(percentages[index] !== -1) {
+            nodeListForEach(percentageElementsList, function (current, index) {
+                if (percentages[index] > 0) {
                     current.textContent = percentages[index] + " %";
-                }else{
+                } else {
                     current.textContent = "---";
                 }
             });
