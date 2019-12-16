@@ -187,9 +187,9 @@ let UIController = (function () {
             };
         },
         updateBudgetInfo: function (budgetObj) {
-            document.querySelector(DOMstring.budgetValue).textContent = budgetObj.budget;
-            document.querySelector(DOMstring.budgetExpensesValue).textContent = budgetObj.totalExpenses;
-            document.querySelector(DOMstring.budgetIncomeValue).textContent = budgetObj.totalIncome;
+            document.querySelector(DOMstring.budgetValue).textContent = formatNumber(budgetObj.budget, (budgetObj.budget>0? INC: EXP));
+            document.querySelector(DOMstring.budgetExpensesValue).textContent = formatNumber(budgetObj.totalExpenses, EXP);
+            document.querySelector(DOMstring.budgetIncomeValue).textContent = formatNumber(budgetObj.totalIncome, EXP);
             if (budgetObj.incomeSpentPercentage > 0) {
                 document.querySelector(DOMstring.budgetIncomePercentage).textContent = budgetObj.incomeSpentPercentage + " %";
             } else {
