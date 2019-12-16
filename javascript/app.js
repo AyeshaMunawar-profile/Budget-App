@@ -66,14 +66,13 @@ let budgetController = (function () {
             },
             deleteItem: function (type, id) {
                 let idArray, index;
-                idArray = budgetData.allItems[type].map(function (current, index, array) {
+                idArray = budgetData.allItems[type].map(function (current) {
                     return current.id;
                 });
                 index = idArray.indexOf(id); // find index of the element with this id
                 if (index !== -1) {
                     budgetData.allItems[type].splice(index, 1); // delete at index 1 array element
                     budgetData.itemsCount--;
-                    return index;
                 }
             },
 
@@ -161,15 +160,15 @@ let UIController = (function () {
             let fields, fieldsArray;
             fields = document.querySelectorAll(DOMstring.addDescription + ',' + DOMstring.addValue);
             fieldsArray = Array.prototype.slice.call(fields);
-            fieldsArray.forEach(function (current, index, array) {
+            fieldsArray.forEach(function (current) {
                 current.value = "";
             });
             fieldsArray[0].focus();
         },
-        deleteItem: function (type, index) {
+        deleteItem: function (selectorID) {
             let item;
-            item = document.getElementById(type + '-' + index);
-            item.remove();
+            item = document.getElementById(selectorID);
+            item.parentNode.removeChild(item);
         }
         ,
         getDOMStrings: function () {
@@ -201,13 +200,11 @@ let controller = (function (budgetCrl, UICrl) {
             type = splitID[0];
             id = parseInt(splitID[1]);
             //1. delete thew item from the datastructure
-            index = budgetCrl.deleteItem(type, id);
+            budgetCrl.deleteItem(type, id);
             //2. delete the item from the UI
-            if (index >= 0) {
-                UICrl.deleteItem(type, index);
-                //3. Update the budget
-                crlUpdateBudget();
-            }
+            UICrl.deleteItem(itemID);
+            //3. Update the budget
+            crlUpdateBudget();
         }
     };
 
