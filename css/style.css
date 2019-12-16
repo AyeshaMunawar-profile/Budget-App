@@ -185,7 +185,7 @@ body {
 .add__description:focus,
 .add__value:focus {
     outline: none;
-    border: 1px solid #374785;
+    border: 1px solid #1babd6;
 }
 
 .add__btn:focus {
@@ -260,13 +260,13 @@ h2 {
 
 .income .item__value,
 .income .item__delete--btn {
-    color: #374785;
+    color: #1babd6;
 }
 
 .expenses .item__value,
 .expenses .item__percentage,
 .expenses .item__delete--btn {
-    color: #f76d6d;
+    color: #f76d6d !important;
 }
 
 
