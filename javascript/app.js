@@ -20,6 +20,20 @@ let budgetController = (function () {
             this.percentage = percentage ? percentage : -1;
         };
 
+        Expense.prototype.calculatePercentage = function (totalIncome) {
+            let percentage;
+            if (totalIncome > 0) {
+                percentage = Math.round((this.value / totalIncome) * 100);
+                this.percentage = percentage;
+            } else {
+                this.percentage = -1;
+            }
+        };
+
+        Expense.prototype.getPercentage = function(){
+            return this.percentage;
+        };
+
         let calculateTotal = function (type) { // type can be 'inc' or 'exp'
             let total = 0;
             budgetData.allItems[type].forEach(function (current) {
@@ -28,13 +42,6 @@ let budgetController = (function () {
             //store it in the budget data datastructure
             budgetData.totalItems[type] = total;
             return total;
-        };
-
-        let calculatePercentage = function (expense) {
-            let totalIncome, incomeSpentPercentage;
-            totalIncome = calculateTotal('inc');
-            incomeSpentPercentage = (expense.value / totalIncome) * 100;
-            return incomeSpentPercentage;
         };
 
         let budgetData = { // datastructure to store budget information
@@ -95,9 +102,9 @@ let budgetController = (function () {
             getIncomeSpentPercentages: function () {
                 let percentagesArray;
                 percentagesArray = budgetData.allItems.exp.map(function (current) {
-                    return current.percentage;
+                    return current.getPercentage();
                 });
-                return percentagesArray
+                return percentagesArray;
             },
             calculateBudget: function () {
                 let totalIncome, totalExpense, totalBudget, incomeSpentPercentage;
@@ -114,10 +121,10 @@ let budgetController = (function () {
                 }
             },
             calculateIncomePercentages: function () {
-                let percentagesArray;
-                percentagesArray = budgetData.allItems.exp.forEach(function (current) {
-                    let percentage = calculatePercentage(current);
-                    current.percentage = percentage;
+                let totalIncome;
+                totalIncome = budgetData.totalItems.inc;
+                budgetData.allItems.exp.forEach(function (current) {
+                    current.calculatePercentage(totalIncome);
                 });
             },
             testing: function () {
